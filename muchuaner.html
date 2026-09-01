@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>木串儿 · 手串设计</title>
+<style>
+:root{
+  --paper:#EAE1CB;
+  --paper-deep:#DED2B4;
+  --ink:#2B241C;
+  --ink-soft:#5B5044;
+  --wood:#6B4226;
+  --seal:#A23B2E;
+  --gold:#A8863C;
+  --jade:#4F6F52;
+  --line:rgba(43,36,28,0.16);
+  --radius:10px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:"Noto Serif SC","Songti SC","STSong","SimSun",serif;
+  color:var(--ink);
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.16  0 0 0 0 0.13  0 0 0 0 0.09  0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E"),
+    linear-gradient(180deg,#EFE7D2,#E3D6B7 60%,#DACB9F);
+  min-height:100vh;
+}
+#app{max-width:480px;margin:0 auto;min-height:100vh;position:relative;padding-bottom:76px;}
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 20px 14px;
+}
+.brand{display:flex;align-items:center;gap:10px;}
+.seal-mark{
+  width:34px;height:34px;background:var(--seal);color:#F3E9D2;
+  display:flex;align-items:center;justify-content:center;
+  font-size:17px;font-weight:700;border-radius:3px;
+  box-shadow:0 1px 0 rgba(0,0,0,0.2) inset, 0 2px 4px rgba(0,0,0,0.25);
+  letter-spacing:0;
+}
+.brand h1{font-size:20px;margin:0;font-weight:700;letter-spacing:1px;}
+.brand p{margin:0;font-size:11px;color:var(--ink-soft);letter-spacing:2px;}
+
+.page{display:none;padding:0 18px 24px;animation:fadein .25s ease;}
+.page.active{display:block;}
+@keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+/* ---------- 首页 ---------- */
+.hero{
+  position:relative;padding:26px 18px 30px;margin:0 -18px 18px;
+  background:radial-gradient(circle at 30% 20%, rgba(255,255,255,0.35), transparent 60%), var(--paper-deep);
+  border-bottom:1px solid var(--line);
+  text-align:center;
+}
+.hero h2{font-size:26px;line-height:1.5;margin:14px 0 6px;font-weight:700;}
+.hero p.sub{color:var(--ink-soft);font-size:13.5px;margin:0 0 18px;line-height:1.8;}
+.hero-ring{width:200px;height:200px;margin:0 auto;}
+.cta-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.btn{
+  border:1px solid var(--ink);background:var(--ink);color:var(--paper);
+  padding:11px 20px;border-radius:var(--radius);font-family:inherit;
+  font-size:14px;letter-spacing:1px;cursor:pointer;font-weight:600;
+}
+.btn.outline{background:transparent;color:var(--ink);}
+.btn.gold{background:var(--seal);border-color:var(--seal);color:#F6ECD8;}
+.btn.small{padding:7px 14px;font-size:12.5px;}
+.btn:active{transform:translateY(1px);}
+
+.section-title{font-size:17px;font-weight:700;margin:26px 0 4px;display:flex;align-items:baseline;gap:8px;}
+.section-title .num{color:var(--seal);font-size:13px;}
+.section-desc{color:var(--ink-soft);font-size:12.5px;margin:0 0 14px;line-height:1.7;}
+
+.feature-list{display:flex;flex-direction:column;gap:10px;}
+.feature-item{
+  border:1px solid var(--line);background:rgba(255,255,255,0.28);
+  border-radius:var(--radius);padding:12px 14px;display:flex;gap:12px;align-items:flex-start;
+}
+.feature-item .ico{width:30px;height:30px;flex:none;color:var(--wood);}
+.feature-item h4{margin:0 0 3px;font-size:14px;}
+.feature-item p{margin:0;font-size:12px;color:var(--ink-soft);line-height:1.6;}
+
+/* ---------- 图库 ---------- */
+.wood-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px;}
+.wood-card{
+  background:rgba(255,255,255,0.32);border:1px solid var(--line);border-radius:var(--radius);
+  padding:14px 10px 12px;text-align:center;cursor:pointer;
+}
+.wood-card:active{background:rgba(255,255,255,0.55);}
+.bead-icon{width:52px;height:52px;margin:0 auto 8px;border-radius:50%;box-shadow:inset -6px -6px 10px rgba(0,0,0,0.25), inset 4px 4px 8px rgba(255,255,255,0.35), 0 2px 3px rgba(0,0,0,0.2);}
+.wood-card h4{margin:0 0 2px;font-size:13.5px;}
+.wood-card span{font-size:10.5px;color:var(--ink-soft);}
+
+/* ---------- 弹窗 ---------- */
+.overlay{
+  position:fixed;inset:0;background:rgba(20,16,10,0.5);
+  display:none;align-items:flex-end;justify-content:center;z-index:50;
+}
+.overlay.show{display:flex;}
+.sheet{
+  width:100%;max-width:480px;max-height:88vh;overflow-y:auto;
+  background:var(--paper);border-radius:18px 18px 0 0;
+  padding:18px 20px 26px;position:relative;
+  box-shadow:0 -8px 30px rgba(0,0,0,0.3);
+  animation:slideup .28s ease;
+}
+@keyframes slideup{from{transform:translateY(30px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.sheet .close{
+  position:absolute;top:14px;right:16px;width:28px;height:28px;border-radius:50%;
+  border:1px solid var(--line);background:rgba(255,255,255,0.4);
+  display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;color:var(--ink-soft);
+}
+.sheet h3{margin:2px 40px 2px 0;font-size:19px;}
+.sheet .latin{font-style:italic;color:var(--ink-soft);font-size:12.5px;margin:0 0 14px;}
+.dossier{display:grid;grid-template-columns:1fr;gap:0;border-top:1px solid var(--line);}
+.dossier .row{padding:10px 0;border-bottom:1px solid var(--line);}
+.dossier .row b{display:block;font-size:11.5px;color:var(--seal);letter-spacing:1px;margin-bottom:3px;}
+.dossier .row span{font-size:13px;line-height:1.7;color:var(--ink);}
+.sheet-actions{margin-top:16px;display:flex;gap:10px;}
+
+/* ---------- 设计器 ---------- */
+.designer-wrap{margin-top:12px;}
+.preview-stage{
+  width:100%;aspect-ratio:1/1;max-width:300px;margin:0 auto 16px;
+  background:radial-gradient(circle,rgba(255,255,255,0.4),rgba(255,255,255,0) 65%);
+  border:1px solid var(--line);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;position:relative;
+}
+.preview-stage svg{width:88%;height:88%;}
+.bead-count-tag{
+  position:absolute;bottom:8px;left:50%;transform:translateX(-50%);
+  font-size:11px;color:var(--ink-soft);background:rgba(255,255,255,0.6);
+  padding:3px 10px;border-radius:20px;border:1px solid var(--line);
+}
+.chip-list{display:flex;flex-direction:column;gap:8px;}
+.chip{
+  display:flex;align-items:center;gap:10px;border:1px solid var(--line);
+  border-radius:var(--radius);padding:9px 11px;background:rgba(255,255,255,0.25);
+}
+.chip.active{background:rgba(255,255,255,0.55);border-color:var(--gold);}
+.chip .dot{width:26px;height:26px;border-radius:50%;flex:none;box-shadow:inset -4px -4px 7px rgba(0,0,0,0.25), inset 3px 3px 6px rgba(255,255,255,0.35);}
+.chip .name{flex:1;font-size:13.5px;}
+.stepper{display:flex;align-items:center;gap:8px;}
+.stepper button{
+  width:24px;height:24px;border-radius:50%;border:1px solid var(--ink);
+  background:transparent;font-size:13px;line-height:1;cursor:pointer;color:var(--ink);
+}
+.stepper .cnt{width:20px;text-align:center;font-size:13px;}
+.designer-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px;}
+
+/* ---------- 佩戴预览 ---------- */
+.wear-stage{
+  width:100%;aspect-ratio:3/4;background:#cfc4a6;border-radius:var(--radius);
+  overflow:hidden;position:relative;border:1px solid var(--line);touch-action:none;
+}
+.wear-stage img.photo{width:100%;height:100%;object-fit:cover;display:block;}
+.wear-stage .empty-hint{
+  position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:10px;color:var(--ink-soft);font-size:12.5px;text-align:center;padding:0 30px;
+}
+.wear-overlay{position:absolute;top:50%;left:50%;width:52%;pointer-events:none;transform-origin:center center;}
+.wear-overlay img{width:100%;display:block;}
+.slider-row{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:12px;color:var(--ink-soft);}
+.slider-row input[type=range]{flex:1;accent-color:var(--seal);}
+
+/* ---------- 测试 ---------- */
+.quiz-card{
+  background:rgba(255,255,255,0.32);border:1px solid var(--line);border-radius:var(--radius);
+  padding:16px;margin-top:14px;
+}
+.quiz-card h4{margin:0 0 12px;font-size:15px;line-height:1.6;}
+.quiz-opt{
+  display:block;width:100%;text-align:left;padding:11px 13px;margin-bottom:8px;
+  border:1px solid var(--line);border-radius:8px;background:rgba(255,255,255,0.2);
+  font-family:inherit;font-size:13px;color:var(--ink);cursor:pointer;
+}
+.quiz-opt:active{background:rgba(255,255,255,0.5);}
+.quiz-progress{display:flex;gap:6px;margin-top:14px;}
+.quiz-progress span{flex:1;height:3px;background:var(--line);border-radius:2px;}
+.quiz-progress span.done{background:var(--seal);}
+.quiz-result{text-align:center;padding:20px 6px;}
+.quiz-result .bead-icon{width:80px;height:80px;}
+.quiz-result h3{font-size:20px;margin:12px 0 4px;}
+.quiz-result p{color:var(--ink-soft);font-size:12.5px;line-height:1.7;}
+
+/* ---------- 我的作品 ---------- */
+.work-card{
+  border:1px solid var(--line);border-radius:var(--radius);background:rgba(255,255,255,0.28);
+  padding:12px;display:flex;gap:12px;align-items:center;margin-bottom:10px;
+}
+.work-card svg{width:56px;height:56px;flex:none;}
+.work-info{flex:1;min-width:0;}
+.work-info h4{margin:0 0 2px;font-size:13.5px;}
+.work-info span{font-size:11px;color:var(--ink-soft);display:block;}
+.work-actions{display:flex;flex-direction:column;gap:6px;}
+.icon-btn{
+  border:1px solid var(--line);background:rgba(255,255,255,0.4);border-radius:6px;
+  padding:4px 9px;font-size:11px;color:var(--ink-soft);cursor:pointer;font-family:inherit;
+}
+.empty-state{text-align:center;padding:50px 20px;color:var(--ink-soft);font-size:13px;line-height:1.8;}
+
+/* ---------- 分享卡 ---------- */
+.share-canvas-wrap{text-align:center;}
+#shareCanvas{width:100%;max-width:300px;border-radius:8px;border:1px solid var(--line);box-shadow:0 4px 16px rgba(0,0,0,0.2);}
+
+/* ---------- 底部导航 ---------- */
+.tabbar{
+  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+  width:100%;max-width:480px;background:rgba(234,225,203,0.94);
+  backdrop-filter:blur(6px);border-top:1px solid var(--line);
+  display:flex;z-index:30;
+}
+.tab-btn{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:9px 0 8px;background:none;border:none;font-family:inherit;
+  color:var(--ink-soft);font-size:10.5px;cursor:pointer;
+}
+.tab-btn svg{width:20px;height:20px;}
+.tab-btn.active{color:var(--seal);}
+.tab-btn.active svg{filter:drop-shadow(0 0 0 var(--seal));}
+
+.name-input{
+  width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;
+  font-family:inherit;font-size:13px;background:rgba(255,255,255,0.4);color:var(--ink);margin-bottom:10px;
+}
+.field-label{font-size:11.5px;color:var(--ink-soft);margin:0 0 6px;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="seal-mark">串</div>
+      <div><h1>木串儿</h1><p>木珠手串 · AI 设计</p></div>
+    </div>
+  </div>
+
+  <!-- ============ 首页 ============ -->
+  <section class="page active" id="page-home">
+    <div class="hero">
+      <div class="hero-ring" id="heroRing"></div>
+      <h2>拈一串木，养一份心</h2>
+      <p class="sub">十种经典木珠，指尖拼出属于你的那一串。<br>选珠、试戴、测本命，一步都不少。</p>
+      <div class="cta-row">
+        <button class="btn gold" onclick="goPage('design')">开始设计</button>
+        <button class="btn outline" onclick="goPage('quiz')">测本命木珠</button>
+      </div>
+    </div>
+
+    <div class="section-title"><span class="num">一</span>能做什么</div>
+    <p class="section-desc">从了解木性开始，到拼出一串真正属于你的手串。</p>
+    <div class="feature-list">
+      <div class="feature-item">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="6.5" r="1.3"/><circle cx="16.5" cy="9.5" r="1.3"/><circle cx="16.5" cy="14.5" r="1.3"/><circle cx="12" cy="17.5" r="1.3"/><circle cx="7.5" cy="14.5" r="1.3"/><circle cx="7.5" cy="9.5" r="1.3"/></svg>
+        <div><h4>木种图库</h4><p>十种常见文玩木料的完整档案，学名、密度、养护、民俗一览无余。</p></div>
+      </div>
+      <div class="feature-item">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 12a8 8 0 1116 0"/><path d="M12 12l4-3"/></svg>
+        <div><h4>实时设计器</h4><p>勾选木珠与数量，即刻拼成环形手串，所见即所得。</p></div>
+      </div>
+      <div class="feature-item">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+        <div><h4>佩戴预览</h4><p>上传手腕照片，把手串环叠上去，拖动、缩放、旋转随心调。</p></div>
+      </div>
+      <div class="feature-item">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M12 3v12M7 8l5-5 5 5"/><path d="M4 21h16"/></svg>
+        <div><h4>竖版分享卡</h4><p>一键生成 1080×1350 的成品图，直接保存分享。</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 图库 ============ -->
+  <section class="page" id="page-gallery">
+    <div class="section-title"><span class="num">二</span>木种图库</div>
+    <p class="section-desc">点击木珠查看完整档案。</p>
+    <div class="wood-grid" id="woodGrid"></div>
+  </section>
+
+  <!-- ============ 设计器 ============ -->
+  <section class="page" id="page-design">
+    <div class="section-title"><span class="num">三</span>手串设计器</div>
+    <p class="section-desc">勾选木珠与颗数，实时拼成一串。</p>
+    <div class="designer-wrap">
+      <div class="preview-stage">
+        <svg id="braceletPreview" viewBox="0 0 220 220"></svg>
+        <div class="bead-count-tag" id="beadCountTag">共 0 颗</div>
+      </div>
+      <div class="chip-list" id="chipList"></div>
+      <div class="designer-actions">
+        <button class="btn small outline" onclick="openWear()">戴在手腕上</button>
+        <button class="btn small outline" onclick="openShare()">生成分享卡</button>
+        <button class="btn small gold" onclick="saveWork()">保存作品</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 本命测试 ============ -->
+  <section class="page" id="page-quiz">
+    <div class="section-title"><span class="num">四</span>本命木珠测试</div>
+    <p class="section-desc">四道小题，测出与你气质相合的木珠。</p>
+    <div id="quizArea"></div>
+  </section>
+
+  <!-- ============ 我的作品 ============ -->
+  <section class="page" id="page-works">
+    <div class="section-title"><span class="num">五</span>我的作品</div>
+    <p class="section-desc">保存在本机，不会上传到任何地方。</p>
+    <div id="worksList"></div>
+  </section>
+
+</div>
+
+<!-- 底部导航 -->
+<nav class="tabbar">
+  <button class="tab-btn active" data-page="home" onclick="goPage('home')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 11l9-7 9 7"/><path d="M5 10v9a1 1 0 001 1h12a1 1 0 001-1v-9"/></svg>
+    首页
+  </button>
+  <button class="tab-btn" data-page="gallery" onclick="goPage('gallery')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/></svg>
+    图库
+  </button>
+  <button class="tab-btn" data-page="design" onclick="goPage('design')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 12a8 8 0 1116 0"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/></svg>
+    设计器
+  </button>
+  <button class="tab-btn" data-page="quiz" onclick="goPage('quiz')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 9a3 3 0 116 0c0 2-3 2-3 5"/><circle cx="12" cy="17.5" r="0.6" fill="currentColor" stroke="none"/></svg>
+    测本命
+  </button>
+  <button class="tab-btn" data-page="works" onclick="goPage('works')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8M8 13h5"/></svg>
+    作品
+  </button>
+</nav>
+
+<!-- 木种详情弹窗 -->
+<div class="overlay" id="woodOverlay" onclick="if(event.target===this)closeSheet('woodOverlay')">
+  <div class="sheet" id="woodSheet"></div>
+</div>
+
+<!-- 佩戴预览弹窗 -->
+<div class="overlay" id="wearOverlay" onclick="if(event.target===this)closeSheet('wearOverlay')">
+  <div class="sheet">
+    <div class="close" onclick="closeSheet('wearOverlay')">✕</div>
+    <h3>佩戴预览</h3>
+    <p class="field-label">上传一张手腕照片，拖动手串调整位置。</p>
+    <div class="wear-stage" id="wearStage">
+      <div class="empty-hint" id="wearEmptyHint">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2"/><circle cx="12" cy="14" r="3.2"/></svg>
+        <span>点击下方按钮上传手腕照片</span>
+      </div>
+      <div class="wear-overlay" id="wearBraceletOverlay"></div>
+    </div>
+    <input type="file" id="wearFileInput" accept="image/*" style="display:none" onchange="onWearPhoto(event)">
+    <div class="cta-row" style="margin-top:12px;">
+      <button class="btn small outline" onclick="document.getElementById('wearFileInput').click()">上传照片</button>
+      <button class="btn small gold" onclick="exportWear()">导出佩戴图</button>
+    </div>
+    <div class="slider-row"><span>缩放</span><input type="range" id="wearScale" min="40" max="220" value="100" oninput="updateWearTransform()"><span id="wearScaleVal">100%</span></div>
+    <div class="slider-row"><span>旋转</span><input type="range" id="wearRotate" min="-180" max="180" value="0" oninput="updateWearTransform()"><span id="wearRotateVal">0°</span></div>
+  </div>
+</div>
+
+<!-- 分享卡弹窗 -->
+<div class="overlay" id="shareOverlay" onclick="if(event.target===this)closeSheet('shareOverlay')">
+  <div class="sheet">
+    <div class="close" onclick="closeSheet('shareOverlay')">✕</div>
+    <h3>分享卡</h3>
+    <p class="field-label">竖版 1080×1350，长按或点击保存。</p>
+    <div class="share-canvas-wrap">
+      <canvas id="shareCanvas" width="1080" height="1350"></canvas>
+    </div>
+    <div class="cta-row" style="margin-top:14px;">
+      <button class="btn gold" onclick="downloadShareCard()">保存图片</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ======================= 数据：十种木珠 ======================= */
+const WOODS = [
+{ id:'xiaoye', name:'小叶紫檀', alias:'檀香紫檀',
+  latin:'Pterocarpus santalinus', family:'豆科·紫檀属',
+  density:'约 1.00–1.05 g/cm³，入水即沉',
+  hardness:'质地坚硬细密，久经盘玩包浆温润如玉',
+  structure:'结构细腻，常见牛毛纹、金星、水波纹',
+  uses:'高档家具、佛珠手串、文房把件',
+  care:'忌暴晒暴湿，盘玩前保持双手清洁，定期以软布擦拭',
+  culture:'明清两代皇家御用木材，被视为"帝王之木"，寓意紫气东来、富贵祥瑞',
+  price:'档次跨度较大，中高密度老料每克数百至上千元不等',
+  colors:{base:'#4A2C2A',light:'#7A4B3A',dark:'#2E1A18'} },
+
+{ id:'huanghuali', name:'海南黄花梨', alias:'降香黄檀',
+  latin:'Dalbergia odorifera', family:'豆科·黄檀属',
+  density:'约 0.75–0.94 g/cm³',
+  hardness:'硬度中高，油性大，触感温润',
+  structure:'纹理多变，常见"鬼脸纹"，气味清雅持久',
+  uses:'明式家具首选用材、手串摆件',
+  care:'忌长时间浸泡，盘玩易生包浆，避免高温直晒',
+  culture:'明代宫廷御用，被视为财富与吉祥的象征，存世老料稀少',
+  price:'资源稀缺，价格常年居高，优质老料价值极高',
+  colors:{base:'#C08A4E',light:'#E8C68A',dark:'#8C5F30'} },
+
+{ id:'chenxiang', name:'沉香', alias:'沉水香',
+  latin:'Aquilaria spp.', family:'瑞香科·沉香属',
+  density:'因结油程度差异较大，约 0.4–1.2+ g/cm³',
+  hardness:'木质部分较软，结油部位坚实致密',
+  structure:'可见明显油脂线，香气是其核心特征',
+  uses:'香道用材、宗教法器、手串挂饰',
+  care:'避免高温暴晒以防香气挥发，忌沾染油污',
+  culture:'佛教、道教皆视为圣物，民间亦有辟秽安神的说法',
+  price:'按结油等级差异极大，从数百到数万元每克不等',
+  colors:{base:'#5C4033',light:'#8B6F47',dark:'#3A281F'} },
+
+{ id:'laoshantan', name:'老山檀', alias:'印度老山檀香',
+  latin:'Santalum album', family:'檀香科·檀香属',
+  density:'约 0.9–1.0+ g/cm³',
+  hardness:'硬度中等，油性丰富，触感细腻',
+  structure:'纹理细密均匀，香气持久温和',
+  uses:'佛珠念珠、香料雕刻、手串',
+  care:'避免暴晒以保持油性，盘玩过程中香气会愈发醇厚',
+  culture:'佛教圣木，寺庙供奉与法事常用，寓意清净安宁',
+  price:'中高档位，因产地资源稀缺而价格坚挺',
+  colors:{base:'#D8B98C',light:'#F0DDB8',dark:'#B08F5E'} },
+
+{ id:'xingyue', name:'星月菩提', alias:'黄藤籽',
+  latin:'民间通称，学名因产地说法不一，常指棕榈科省藤属植物种子', family:'棕榈科（民间习称，非严格木材）',
+  density:'因籽实密实程度而异，盘玩后手感沉实',
+  hardness:'质地坚实，耐盘耐磨',
+  structure:'表面布满细密"月"点，主孔周围环绕"星"点，故称星月',
+  uses:'佛珠手串，常见 108 颗、18 颗等传统配数',
+  care:'忌泡水，盘玩时保持手部干燥以利包浆均匀',
+  culture:'颗数与"星月同辉"的排列常被赋予圆满、清净之寓意',
+  price:'中低到中高档，视密度、月点分布与桩形而定',
+  colors:{base:'#E8DCC0',light:'#F7F0DC',dark:'#C9B98C'} },
+
+{ id:'yabai', name:'崖柏', alias:'太行崖柏',
+  latin:'Thuja sutchuenensis（近缘）', family:'柏科·崖柏属',
+  density:'密度中等，油性强',
+  hardness:'质地坚韧，多见树瘤与油线',
+  structure:'常带天然树瘤、油脂线，俗称"血丝""鬼脸"',
+  uses:'手串、摆件、香料',
+  care:'忌浸水防开裂，盘玩会使油润感更明显',
+  culture:'多生于悬崖峭壁，被视为坚韧不拔、历经风霜的象征',
+  price:'因资源稀缺，价格差异悬殊，带瘤老料尤为珍贵',
+  colors:{base:'#A0785A',light:'#C99B72',dark:'#6E4E38'} },
+
+{ id:'jinsinan', name:'金丝楠', alias:'楠木',
+  latin:'Phoebe zhennan', family:'樟科·楠属',
+  density:'约 0.5–0.6 g/cm³，质地较轻',
+  hardness:'硬度中等偏软，光泽独特',
+  structure:'光线下可见金丝状光泽，故名"金丝楠"',
+  uses:'皇家建筑、宫廷家具、手串摆件',
+  care:'忌暴晒防干裂，可薄涂核桃油养护',
+  culture:'历代皇家专用"国木"，被视为尊贵与传承的象征',
+  price:'中高档位，老料及阴沉木尤为珍贵',
+  colors:{base:'#C9A54A',light:'#EAD37E',dark:'#9C7C30'} },
+
+{ id:'lvtan', name:'绿檀', alias:'愈疮木',
+  latin:'Bulnesia sarmientoi', family:'蒺藜科·愈疮木属',
+  density:'约 1.0–1.2 g/cm³，入水下沉',
+  hardness:'硬度高，油性大，抛光后光泽感强',
+  structure:'黄绿色纹理，油润细腻',
+  uses:'手串、雕刻摆件、把玩件',
+  care:'忌长时间暴晒，盘玩后颜色会逐渐加深',
+  culture:'价格亲民，常作为文玩入门木材，寓意清雅质朴',
+  price:'较为亲民，是入门文玩爱好者的常见选择',
+  colors:{base:'#6B7A3A',light:'#94A85C',dark:'#47531F'} },
+
+{ id:'taomu', name:'桃木', alias:'山桃木',
+  latin:'Prunus davidiana', family:'蔷薇科·桃属',
+  density:'密度中等偏轻',
+  hardness:'质地偏软，纹理清晰',
+  structure:'木质轻盈，纹路自然舒展',
+  uses:'辟邪挂件、桃木剑、手串',
+  care:'忌潮湿，容易开裂，需定期上油保养',
+  culture:'民间自古视桃木为辟邪镇宅之木，传统历史悠久',
+  price:'价格低廉，取材容易，是最亲民的文玩木材之一',
+  colors:{base:'#C77B4E',light:'#E3A472',dark:'#96502A'} },
+
+{ id:'heitan', name:'黑檀', alias:'乌木',
+  latin:'Diospyros spp.', family:'柿科·柿属',
+  density:'约 1.0–1.3 g/cm³，入水即沉',
+  hardness:'硬度很高，质地致密坚实',
+  structure:'黑色或带黑褐色条纹，纹理沉稳',
+  uses:'高档家具、乐器用材、手串把件',
+  care:'忌暴晒防干裂，盘玩后色泽愈发温润',
+  culture:'色泽深沉稳重，常被视为沉稳内敛气质的象征',
+  price:'中等偏高档位，纹理细密者价值更高',
+  colors:{base:'#241F1B',light:'#453B33',dark:'#120F0D'} },
+];
+const WOOD_MAP = Object.fromEntries(WOODS.map(w=>[w.id,w]));
+
+/* ======================= 状态 ======================= */
+let state = {
+  page:'home',
+  selection:{}, // {id:count}
+  wear:{ photo:null, tx:0, ty:0, scale:1, rotate:0 },
+  quiz:{ step:0, scores:{} }
+};
+
+/* ======================= 页面切换 ======================= */
+function goPage(p){
+  state.page = p;
+  document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.page===p));
+  if(p==='works') renderWorks();
+  window.scrollTo(0,0);
+}
+function closeSheet(id){ document.getElementById(id).classList.remove('show'); }
+function openSheetEl(id){ document.getElementById(id).classList.add('show'); }
+
+/* ======================= SVG 手串渲染 ======================= */
+function beadListFromSelection(sel){
+  let list=[];
+  Object.keys(sel).forEach(id=>{
+    const c = sel[id];
+    for(let i=0;i<c;i++) list.push(id);
+  });
+  return list;
+}
+function braceletSVGString(sel, size){
+  size = size || 220;
+  const beads = beadListFromSelection(sel);
+  const total = beads.length;
+  const cx=size/2, cy=size/2;
+  const R = size*0.36;
+  if(total===0){
+    return `<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="#B7A87F" stroke-width="2" stroke-dasharray="4 6"/>`;
+  }
+  const beadR = Math.max(size*0.045, Math.min(size*0.11, (Math.PI*R)/total*0.85));
+  let defs=`<defs>`;
+  let circles='';
+  beads.forEach((id,i)=>{
+    const w = WOOD_MAP[id];
+    const gid = 'g_'+id+'_'+i;
+    defs += `<radialGradient id="${gid}" cx="35%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="${w.colors.light}"/>
+      <stop offset="55%" stop-color="${w.colors.base}"/>
+      <stop offset="100%" stop-color="${w.colors.dark}"/>
+    </radialGradient>`;
+    const ang = (i/total)*Math.PI*2 - Math.PI/2;
+    const x = cx + R*Math.cos(ang);
+    const y = cy + R*Math.sin(ang);
+    circles += `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="${beadR.toFixed(2)}" fill="url(#${gid})" stroke="${w.colors.dark}" stroke-width="0.6"/>`;
+  });
+  defs+='</defs>';
+  return defs+circles;
+}
+function renderPreview(){
+  const svg = document.getElementById('braceletPreview');
+  svg.innerHTML = braceletSVGString(state.selection, 220);
+  const total = beadListFromSelection(state.selection).length;
+  document.getElementById('beadCountTag').textContent = '共 '+total+' 颗';
+}
+function svgToDataURI(svgInner, size){
+  const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">${svgInner}</svg>`;
+  return 'data:image/svg+xml;base64,'+btoa(unescape(encodeURIComponent(full)));
+}
+
+/* ======================= 首页 hero 环 ======================= */
+function renderHeroRing(){
+  const heroSel = {xiaoye:5, huanghuali:4, laoshantan:3, xingyue:4};
+  document.getElementById('heroRing').innerHTML =
+    `<svg viewBox="0 0 220 220" style="width:100%;height:100%;">${braceletSVGString(heroSel,220)}</svg>`;
+}
+
+/* ======================= 图库渲染 ======================= */
+function renderGallery(){
+  const grid = document.getElementById('woodGrid');
+  grid.innerHTML = WOODS.map(w=>`
+    <div class="wood-card" onclick="openWoodSheet('${w.id}')">
+      <div class="bead-icon" style="background:radial-gradient(circle at 35% 30%, ${w.colors.light}, ${w.colors.base} 55%, ${w.colors.dark});"></div>
+      <h4>${w.name}</h4>
+      <span>${w.alias}</span>
+    </div>`).join('');
+}
+function openWoodSheet(id){
+  const w = WOOD_MAP[id];
+  document.getElementById('woodSheet').innerHTML = `
+    <div class="close" onclick="closeSheet('woodOverlay')">✕</div>
+    <h3>${w.name}</h3>
+    <p class="latin">${w.latin} · ${w.family}</p>
+    <div class="dossier">
+      <div class="row"><b>气干密度</b><span>${w.density}</span></div>
+      <div class="row"><b>硬度</b><span>${w.hardness}</span></div>
+      <div class="row"><b>宏观构造</b><span>${w.structure}</span></div>
+      <div class="row"><b>常见用途</b><span>${w.uses}</span></div>
+      <div class="row"><b>养护要点</b><span>${w.care}</span></div>
+      <div class="row"><b>民俗知识</b><span>${w.culture}</span></div>
+      <div class="row"><b>参考价位</b><span>${w.price}</span></div>
+    </div>
+    <div class="sheet-actions">
+      <button class="btn gold small" onclick="addToDesigner('${w.id}');closeSheet('woodOverlay');goPage('design')">选入设计器</button>
+      <button class="btn outline small" onclick="closeSheet('woodOverlay')">关闭</button>
+    </div>
+    <p style="font-size:10.5px;color:var(--ink-soft);margin-top:14px;line-height:1.7;">以上资料为文玩常识整理，仅供参考，具体鉴定请以专业机构为准。</p>
+  `;
+  openSheetEl('woodOverlay');
+}
+
+/* ======================= 设计器 ======================= */
+function renderChipList(){
+  const wrap = document.getElementById('chipList');
+  wrap.innerHTML = WOODS.map(w=>{
+    const active = state.selection[w.id] > 0;
+    const cnt = state.selection[w.id] || 0;
+    return `<div class="chip ${active?'active':''}">
+      <div class="dot" style="background:radial-gradient(circle at 35% 30%, ${w.colors.light}, ${w.colors.base} 55%, ${w.colors.dark});" onclick="toggleWood('${w.id}')"></div>
+      <div class="name" onclick="toggleWood('${w.id}')">${w.name}</div>
+      ${active? `<div class="stepper">
+        <button onclick="changeCount('${w.id}',-1)">−</button>
+        <div class="cnt">${cnt}</div>
+        <button onclick="changeCount('${w.id}',1)">＋</button>
+      </div>` : `<button class="icon-btn" onclick="toggleWood('${w.id}')">选入</button>`}
+    </div>`;
+  }).join('');
+}
+function toggleWood(id){
+  if(state.selection[id]){ delete state.selection[id]; }
+  else{ state.selection[id]=6; }
+  renderChipList(); renderPreview();
+}
+function addToDesigner(id){
+  state.selection[id] = state.selection[id] || 12;
+  renderChipList(); renderPreview();
+}
+function changeCount(id,delta){
+  let v = (state.selection[id]||0)+delta;
+  v = Math.max(1, Math.min(24, v));
+  state.selection[id]=v;
+  renderChipList(); renderPreview();
+}
+function saveWork(){
+  const total = beadListFromSelection(state.selection).length;
+  if(total===0){ alert('先选几颗木珠再保存吧～'); return; }
+  const works = JSON.parse(localStorage.getItem('muchuaner_works')||'[]');
+  const work = {
+    id: 'w_'+Date.now(),
+    name: '手串 · '+ new Date().toLocaleDateString('zh-CN',{month:'2-digit',day:'2-digit'}),
+    date: new Date().toLocaleString('zh-CN'),
+    selection: {...state.selection}
+  };
+  works.unshift(work);
+  localStorage.setItem('muchuaner_works', JSON.stringify(works));
+  alert('已保存到"我的作品"');
+}
+
+/* ======================= 佩戴预览 ======================= */
+function openWear(){
+  const total = beadListFromSelection(state.selection).length;
+  if(total===0){ alert('先在设计器里选几颗木珠吧～'); return; }
+  renderWearOverlay();
+  openSheetEl('wearOverlay');
+}
+function renderWearOverlay(){
+  const uri = svgToDataURI(braceletSVGString(state.selection,220),220);
+  document.getElementById('wearBraceletOverlay').innerHTML = `<img src="${uri}" draggable="false">`;
+  updateWearTransform();
+}
+function onWearPhoto(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev){
+    state.wear.photo = ev.target.result;
+    const stage = document.getElementById('wearStage');
+    document.getElementById('wearEmptyHint').style.display='none';
+    let img = stage.querySelector('img.photo');
+    if(!img){
+      img = document.createElement('img');
+      img.className='photo';
+      stage.insertBefore(img, stage.firstChild);
+    }
+    img.src = state.wear.photo;
+  };
+  reader.readAsDataURL(file);
+}
+function updateWearTransform(){
+  const scale = document.getElementById('wearScale').value/100;
+  const rotate = document.getElementById('wearRotate').value;
+  state.wear.scale = scale; state.wear.rotate = +rotate;
+  document.getElementById('wearScaleVal').textContent = Math.round(scale*100)+'%';
+  document.getElementById('wearRotateVal').textContent = rotate+'°';
+  applyWearTransformStyle();
+}
+function applyWearTransformStyle(){
+  const el = document.getElementById('wearBraceletOverlay');
+  el.style.transform = `translate(-50%,-50%) translate(${state.wear.tx}px, ${state.wear.ty}px) rotate(${state.wear.rotate}deg) scale(${state.wear.scale})`;
+}
+(function setupWearDrag(){
+  const stage = document.getElementById('wearStage');
+  const overlay = document.getElementById('wearBraceletOverlay');
+  let dragging=false, startX=0, startY=0, baseTx=0, baseTy=0;
+  overlay.style.pointerEvents='auto';
+  function down(x,y){ dragging=true; startX=x; startY=y; baseTx=state.wear.tx; baseTy=state.wear.ty; }
+  function move(x,y){
+    if(!dragging) return;
+    state.wear.tx = baseTx + (x-startX);
+    state.wear.ty = baseTy + (y-startY);
+    applyWearTransformStyle();
+  }
+  function up(){ dragging=false; }
+  overlay.addEventListener('pointerdown', e=>{ down(e.clientX,e.clientY); overlay.setPointerCapture(e.pointerId); });
+  overlay.addEventListener('pointermove', e=>{ move(e.clientX,e.clientY); });
+  overlay.addEventListener('pointerup', up);
+  overlay.addEventListener('pointercancel', up);
+})();
+function exportWear(){
+  if(!state.wear.photo){ alert('请先上传手腕照片'); return; }
+  const stage = document.getElementById('wearStage');
+  const rect = stage.getBoundingClientRect();
+  const EXPORT_W = 900, EXPORT_H = 1200;
+  const scaleFactor = EXPORT_W/rect.width;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = EXPORT_W; canvas.height = EXPORT_H;
+  const ctx = canvas.getContext('2d');
+
+  const photoImg = new Image();
+  photoImg.onload = function(){
+    // cover-fit photo
+    const ir = photoImg.width/photoImg.height, cr = EXPORT_W/EXPORT_H;
+    let sw=photoImg.width, sh=photoImg.height, sx=0, sy=0;
+    if(ir>cr){ sw = sh*cr; sx=(photoImg.width-sw)/2; } else { sh = sw/cr; sy=(photoImg.height-sh)/2; }
+    ctx.drawImage(photoImg, sx,sy,sw,sh, 0,0, EXPORT_W, EXPORT_H);
+
+    const braceletImg = new Image();
+    braceletImg.onload = function(){
+      const bSize = rect.width*0.52*scaleFactor;
+      const cx = EXPORT_W/2 + state.wear.tx*scaleFactor;
+      const cy = EXPORT_H/2 + state.wear.ty*scaleFactor;
+      ctx.save();
+      ctx.translate(cx,cy);
+      ctx.rotate(state.wear.rotate*Math.PI/180);
+      ctx.scale(state.wear.scale, state.wear.scale);
+      ctx.drawImage(braceletImg, -bSize/2, -bSize/2, bSize, bSize);
+      ctx.restore();
+
+      const a = document.createElement('a');
+      a.href = canvas.toDataURL('image/png');
+      a.download = '木串儿-佩戴预览.png';
+      a.click();
+    };
+    braceletImg.src = svgToDataURI(braceletSVGString(state.selection,220),220);
+  };
+  photoImg.src = state.wear.photo;
+}
+
+/* ======================= 分享卡 ======================= */
+function drawPaperTexture(ctx,w,h,base){
+  ctx.fillStyle = base;
+  ctx.fillRect(0,0,w,h);
+  for(let i=0;i<900;i++){
+    ctx.fillStyle = 'rgba(70,55,35,'+(Math.random()*0.035).toFixed(3)+')';
+    ctx.fillRect(Math.random()*w, Math.random()*h, 1.4, 1.4);
+  }
+}
+function drawBraceletOnCanvas(ctx, cx, cy, R, sel){
+  const beads = beadListFromSelection(sel);
+  const total = beads.length;
+  if(total===0) return;
+  const beadR = Math.max(14, Math.min(46, (Math.PI*R)/total*0.85));
+  beads.forEach((id,i)=>{
+    const w = WOOD_MAP[id];
+    const ang = (i/total)*Math.PI*2 - Math.PI/2;
+    const x = cx + R*Math.cos(ang);
+    const y = cy + R*Math.sin(ang);
+    const grad = ctx.createRadialGradient(x-beadR*0.3,y-beadR*0.35,beadR*0.15, x,y,beadR);
+    grad.addColorStop(0, w.colors.light);
+    grad.addColorStop(0.55, w.colors.base);
+    grad.addColorStop(1, w.colors.dark);
+    ctx.beginPath();
+    ctx.fillStyle = grad;
+    ctx.arc(x,y,beadR,0,Math.PI*2);
+    ctx.fill();
+    ctx.lineWidth=1.5; ctx.strokeStyle=w.colors.dark; ctx.stroke();
+  });
+}
+function renderShareCard(){
+  const canvas = document.getElementById('shareCanvas');
+  const ctx = canvas.getContext('2d');
+  const W=1080,H=1350;
+  drawPaperTexture(ctx,W,H,'#EAE1CB');
+
+  // 边框
+  ctx.strokeStyle='rgba(43,36,28,0.25)'; ctx.lineWidth=2;
+  ctx.strokeRect(40,40,W-80,H-80);
+
+  // 印章
+  ctx.fillStyle='#A23B2E';
+  ctx.fillRect(W-160,90,70,70);
+  ctx.fillStyle='#F3E9D2';
+  ctx.font='700 40px "Noto Serif SC","Songti SC",serif';
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('串',W-125,128);
+
+  // 标题
+  ctx.fillStyle='#2B241C';
+  ctx.textAlign='left';
+  ctx.font='700 76px "Noto Serif SC","Songti SC",serif';
+  ctx.fillText('木串儿',88,150);
+  ctx.font='400 26px "Noto Serif SC","Songti SC",serif';
+  ctx.fillStyle='#5B5044';
+  ctx.fillText('拈一串木 · 养一份心',90,196);
+
+  // 手串
+  drawBraceletOnCanvas(ctx, W/2, 560, 300, state.selection);
+
+  // 分割线
+  ctx.strokeStyle='rgba(43,36,28,0.2)';
+  ctx.beginPath(); ctx.moveTo(120,900); ctx.lineTo(W-120,900); ctx.stroke();
+
+  // 木珠清单
+  const entries = Object.keys(state.selection).filter(id=>state.selection[id]>0);
+  ctx.textAlign='center';
+  ctx.font='700 34px "Noto Serif SC","Songti SC",serif';
+  ctx.fillStyle='#2B241C';
+  ctx.fillText('本串用料', W/2, 960);
+
+  ctx.font='400 26px "Noto Serif SC","Songti SC",serif';
+  ctx.fillStyle='#4A4032';
+  const lineY = 1015;
+  const cols = entries.length<=5 ? entries : entries.slice(0,5);
+  cols.forEach((id,i)=>{
+    const w = WOOD_MAP[id];
+    const y = lineY + i*46;
+    ctx.textAlign='left';
+    ctx.fillStyle=w.colors.base;
+    ctx.beginPath(); ctx.arc(150,y-8,10,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#2B241C';
+    ctx.fillText(`${w.name}`, 175, y);
+    ctx.textAlign='right';
+    ctx.fillStyle='#5B5044';
+    ctx.fillText(`× ${state.selection[id]} 颗`, W-150, y);
+  });
+
+  const totalBeads = beadListFromSelection(state.selection).length;
+  ctx.textAlign='center';
+  ctx.font='400 24px "Noto Serif SC","Songti SC",serif';
+  ctx.fillStyle='#5B5044';
+  ctx.fillText(`共 ${totalBeads} 颗 · ${new Date().toLocaleDateString('zh-CN')}`, W/2, H-90);
+}
+function openShare(){
+  const total = beadListFromSelection(state.selection).length;
+  if(total===0){ alert('先在设计器里选几颗木珠吧～'); return; }
+  renderShareCard();
+  openSheetEl('shareOverlay');
+}
+function downloadShareCard(){
+  const canvas = document.getElementById('shareCanvas');
+  const a = document.createElement('a');
+  a.href = canvas.toDataURL('image/png');
+  a.download = '木串儿-分享卡.png';
+  a.click();
+}
+
+/* ======================= 本命木珠测试 ======================= */
+const QUIZ_QUESTIONS = [
+  { q:'清晨醒来，你最想做的第一件事是？',
+    opts:[
+      {t:'泡一壶热茶，静坐片刻', s:{laoshantan:2,chenxiang:1,xiaoye:1}},
+      {t:'换上鞋子，出门走一走', s:{taomu:2,lvtan:1,yabai:1}},
+      {t:'翻开一本书或处理点事情', s:{huanghuali:2,jinsinan:1}},
+      {t:'望向窗外，发一会儿呆', s:{xingyue:2,heitan:1}},
+    ]},
+  { q:'朋友眼中的你，更像是？',
+    opts:[
+      {t:'沉稳可靠的主心骨', s:{heitan:2,xiaoye:1}},
+      {t:'温润细腻的知心人', s:{huanghuali:2,laoshantan:1}},
+      {t:'洒脱自在的自由派', s:{xingyue:2,yabai:1}},
+      {t:'低调神秘的独行者', s:{chenxiang:2,jinsinan:1}},
+    ]},
+  { q:'如果要选一种气味陪伴自己，你会选？',
+    opts:[
+      {t:'清冷木质香', s:{laoshantan:2,lvtan:1}},
+      {t:'醇厚沉稳的香气', s:{chenxiang:2,xiaoye:1}},
+      {t:'淡雅果木香', s:{taomu:2,huanghuali:1}},
+      {t:'若有若无的清香', s:{xingyue:2,jinsinan:1}},
+    ]},
+  { q:'面对压力和麻烦事，你通常？',
+    opts:[
+      {t:'冷静分析，稳步解决', s:{xiaoye:2,heitan:1}},
+      {t:'顺其自然，静待转机', s:{chenxiang:2,laoshantan:1}},
+      {t:'找朋友聊聊，转移注意力', s:{taomu:2,yabai:1}},
+      {t:'独自消化，不动声色', s:{jinsinan:2,xingyue:1}},
+    ]},
+];
+function startQuiz(){
+  state.quiz = {step:0, scores:{}};
+  renderQuiz();
+}
+function renderQuiz(){
+  const area = document.getElementById('quizArea');
+  const step = state.quiz.step;
+  if(step>=QUIZ_QUESTIONS.length){ renderQuizResult(); return; }
+  const q = QUIZ_QUESTIONS[step];
+  area.innerHTML = `
+    <div class="quiz-card">
+      <h4>${step+1}. ${q.q}</h4>
+      ${q.opts.map((o,i)=>`<button class="quiz-opt" onclick="answerQuiz(${step},${i})">${o.t}</button>`).join('')}
+      <div class="quiz-progress">
+        ${QUIZ_QUESTIONS.map((_,i)=>`<span class="${i<step?'done':''}"></span>`).join('')}
+      </div>
+    </div>`;
+}
+function answerQuiz(step,optIndex){
+  const s = QUIZ_QUESTIONS[step].opts[optIndex].s;
+  Object.keys(s).forEach(id=>{
+    state.quiz.scores[id] = (state.quiz.scores[id]||0) + s[id];
+  });
+  state.quiz.step++;
+  renderQuiz();
+}
+function renderQuizResult(){
+  let bestId = WOODS[0].id, bestScore = -1;
+  WOODS.forEach(w=>{
+    const s = state.quiz.scores[w.id]||0;
+    if(s>bestScore){ bestScore=s; bestId=w.id; }
+  });
+  const w = WOOD_MAP[bestId];
+  document.getElementById('quizArea').innerHTML = `
+    <div class="quiz-card quiz-result">
+      <div class="bead-icon" style="margin:0 auto;background:radial-gradient(circle at 35% 30%, ${w.colors.light}, ${w.colors.base} 55%, ${w.colors.dark});"></div>
+      <h3>你的本命木珠是<br>${w.name}</h3>
+      <p>${w.culture}</p>
+      <div class="cta-row" style="margin-top:16px;">
+        <button class="btn gold small" onclick="addToDesigner('${w.id}');goPage('design')">导入设计器</button>
+        <button class="btn outline small" onclick="startQuiz()">重新测试</button>
+      </div>
+    </div>`;
+}
+
+/* ======================= 我的作品 ======================= */
+function renderWorks(){
+  const works = JSON.parse(localStorage.getItem('muchuaner_works')||'[]');
+  const wrap = document.getElementById('worksList');
+  if(works.length===0){
+    wrap.innerHTML = `<div class="empty-state">还没有保存的作品<br>去设计器拼一串，点击"保存作品"试试</div>`;
+    return;
+  }
+  wrap.innerHTML = works.map(w=>`
+    <div class="work-card">
+      <svg viewBox="0 0 220 220">${braceletSVGString(w.selection,220)}</svg>
+      <div class="work-info">
+        <h4>${w.name}</h4>
+        <span>${w.date}</span>
+        <span>共 ${beadListFromSelection(w.selection).length} 颗</span>
+      </div>
+      <div class="work-actions">
+        <button class="icon-btn" onclick='loadWork(${JSON.stringify(w.id)})'>导入</button>
+        <button class="icon-btn" onclick='deleteWork(${JSON.stringify(w.id)})'>删除</button>
+      </div>
+    </div>`).join('');
+}
+function loadWork(id){
+  const works = JSON.parse(localStorage.getItem('muchuaner_works')||'[]');
+  const w = works.find(x=>x.id===id);
+  if(!w) return;
+  state.selection = {...w.selection};
+  renderChipList(); renderPreview();
+  goPage('design');
+}
+function deleteWork(id){
+  let works = JSON.parse(localStorage.getItem('muchuaner_works')||'[]');
+  works = works.filter(x=>x.id!==id);
+  localStorage.setItem('muchuaner_works', JSON.stringify(works));
+  renderWorks();
+}
+
+/* ======================= 初始化 ======================= */
+renderHeroRing();
+renderGallery();
+renderChipList();
+renderPreview();
+startQuiz();
+</script>
+</body>
+</html>
